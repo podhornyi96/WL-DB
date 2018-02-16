@@ -18,7 +18,7 @@ CREATE PROCEDURE [dbo].[EventListModify]
 AS
 BEGIN
 	
-	DECLARE @Ids table( Id bigint); 
+	DECLARE @Ids table( Id BIGINT NOT NULL); 
 
 	MERGE dbo.EventList target
 	USING (SELECT @ID as ID) source
@@ -82,8 +82,9 @@ BEGIN
 			GETUTCDATE(),
 			GETUTCDATE()
 		)
-	WHEN NOT MATCHED BY SOURCE AND target.EventListId = @EventListId
-		THEN DELETE;
+	WHEN NOT MATCHED BY SOURCE AND target.EventListId = @EventListId THEN
+		 UPDATE SET
+			target.EventListId = NULL;
 
 
 	SELECT @EventListId;

@@ -12,6 +12,7 @@ CREATE PROCEDURE [dbo].[ProductListGet]
 	@Title varchar(50) = NULL,
 	@EventListId INT = NULL,
 	@OwnerId varchar(100) = NULL,
+	@StoreId bigint = NULL,
 	@Skip INT = NULL,
 	@Top INT = NULL,
 	@IDs dbo.ListLong READONLY
@@ -20,12 +21,12 @@ BEGIN
 	
 	create table #ids ( 
 		ID bigint NOT NULL,
-		TotalRows INT NULL
+		TotalRows INT NOT NULL
 	);
 
 	IF(@SearchType = 1)
 		INSERT INTO #ids
-			SELECT ID, NULL FROM dbo.ProductList
+			SELECT ID, 0 FROM dbo.ProductList
 			WHERE Id IN (SELECT ID FROM @IDs);
 
 	IF(@SearchType = 2)
@@ -39,7 +40,12 @@ BEGIN
 					pl.Created,
 					pl.Updated
 			FROM ProductList pl
-			WHERE pl.Title LIKE '%' + @Title + '%' OR @Title IS NULL
+			WHERE (pl.Title LIKE '%' + @Title + '%' OR @Title IS NULL)
+			AND pl.OwnerId = @OwnerId
+			AND pl.StoreId = @StoreId
+			AND (
+				pl.EventListId = @EventListId OR pl.EventListId IS NULL
+			)
 		)
 
 		INSERT INTO #ids
@@ -64,6 +70,7 @@ BEGIN
 			pl.Updated
 	FROM	dbo.ProductList pl
 	WHERE	pl.Id IN (SELECT Id FROM #ids)
+	ORDER BY pl.Created ASC
 
 	SELECT	pl.ProductListId as ProdListId,
 			pl.ProductListId,

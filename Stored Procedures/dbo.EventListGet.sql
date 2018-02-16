@@ -12,7 +12,8 @@ CREATE PROCEDURE [dbo].[EventListGet]
 	@Title varchar(50) = NULL,
 	@Skip INT = NULL,
 	@Top INT = NULL,
-	@OwnerId varchar(100) = NULL, -- TODO:
+	@OwnerId varchar(100) = NULL,
+	@StoreId BIGINT = NULL,
 	@IDs dbo.ListLong READONLY
 AS
 BEGIN
@@ -40,6 +41,8 @@ BEGIN
 					el.Updated
 			FROM EventList el
 			WHERE el.Title LIKE '%' + @Title + '%' OR @Title IS NULL
+			AND el.OwnerId = @OwnerId
+			AND el.StoreId = @StoreId
 		)
 
 		INSERT INTO #ids
@@ -50,7 +53,7 @@ BEGIN
 			SELECT COUNT(*) AS CountPeriods 
 			FROM EventListCTE
 		) AS tCountPeriods
-		ORDER BY ID
+		ORDER BY EventListCTE.Created DESC
 		OFFSET @Skip ROWS
 		FETCH NEXT  @Top ROWS ONLY
 	END
@@ -65,6 +68,7 @@ BEGIN
 			el.Updated
 	FROM	dbo.EventList el
 	WHERE	el.Id IN (SELECT Id FROM #ids)
+	ORDER BY el.Created DESC
 
 	SELECT	pl.EventListId as EventId,
 			pl.Id,

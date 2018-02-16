@@ -17,7 +17,7 @@ CREATE PROCEDURE [dbo].[ProductListModify]
 AS
 BEGIN
 	
-	DECLARE @Ids table( Id bigint); 
+	DECLARE @Ids table( Id BIGINT NOT NULL); 
 
 	MERGE dbo.ProductList target
 	USING (SELECT @ID as ID) source
@@ -58,7 +58,9 @@ BEGIN
 				@ProductListId as ProductListID
 		FROM @Products p
 	) as source ([ShopifyProductId], VariantId, ProductListID)
-	ON (target.ProductListID = source.ProductListID) AND (target.ProductId = source.[ShopifyProductId])
+	ON (target.ProductListID = source.ProductListID) 
+	AND (target.ProductId = source.[ShopifyProductId]) 
+	AND (Target.VariantId = source.VariantId)
 	WHEN NOT MATCHED THEN
 		INSERT (
 			[ProductListID],
