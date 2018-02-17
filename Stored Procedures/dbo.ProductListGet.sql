@@ -8,7 +8,7 @@ GO
 -- Description:	<Description,,>
 -- =============================================
 CREATE PROCEDURE [dbo].[ProductListGet]
-	@SearchType INT, -- By Id = 1, By Params = 2 (with paging)
+	@SearchType INT, -- By Id = 1, By Params for event list = 2 (with paging), By Params all = 3 (with paging)
 	@Title varchar(50) = NULL,
 	@EventListId INT = NULL,
 	@OwnerId varchar(100) = NULL,
@@ -29,7 +29,7 @@ BEGIN
 			SELECT ID, 0 FROM dbo.ProductList
 			WHERE Id IN (SELECT ID FROM @IDs);
 
-	IF(@SearchType = 2)
+	IF(@SearchType = 2 OR @SearchType = 3)
 	BEGIN
 		WITH EventListCTE AS(
 			SELECT	pl.ID,
@@ -43,8 +43,10 @@ BEGIN
 			WHERE (pl.Title LIKE '%' + @Title + '%' OR @Title IS NULL)
 			AND pl.OwnerId = @OwnerId
 			AND pl.StoreId = @StoreId
-			AND (
-				pl.EventListId = @EventListId OR pl.EventListId IS NULL
+			AND ( 
+				@SearchType = 3 OR 
+
+				(@SearchType = 2 AND (pl.EventListId = @EventListId OR pl.EventListId IS NULL))
 			)
 		)
 
